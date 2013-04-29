@@ -10,6 +10,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <stdio.h>
+
 #include "pyramid.h"
 #include "helpers.h"
 #include "affine.h"
@@ -169,7 +171,7 @@ int main(int argc, char **argv)
 
          char suffix[] = ".hesaff.sift";
          int len = strlen(argv[1])+strlen(suffix)+1;
-         char buf[len];
+         char* buf = (char*) malloc (len+1);
          snprintf(buf, len, "%s%s", argv[1], suffix); buf[len-1]=0;      
          ofstream out(buf);
          detector.exportKeypoints(out);

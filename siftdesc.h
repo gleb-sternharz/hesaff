@@ -12,9 +12,19 @@
 #ifndef __SIFTDESC_H__
 #define __SIFTDESC_H__
 
+#ifdef _MSC_VER
+
+#define _USE_MATH_DEFINES
+#include <cmath>
+
+#endif // _MSC_VER
+
 #include <vector>
 #include <cv.h>
 #include "helpers.h"
+
+
+
 
 struct SIFTDescriptorParams
 {

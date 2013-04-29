@@ -14,11 +14,60 @@
 using namespace cv;
 using namespace std;
 
-#include <sys/times.h>
-#include <time.h>
-#include <sys/time.h>
-#include <unistd.h>
+#include <process.h>
 #include <stdio.h>
+
+#include "helpers.h"
+
+#ifdef _MSC_VER
+
+#include <time.h>
+ 
+struct timezone 
+{
+  int  tz_minuteswest; /* minutes W of Greenwich */
+  int  tz_dsttime;     /* type of dst correction */
+};
+ 
+int gettimeofday(struct timeval *tv, struct timezone *tz)
+{
+  FILETIME ft;
+  unsigned __int64 tmpres = 0;
+  static int tzflag;
+ 
+  if (NULL != tv)
+  {
+    GetSystemTimeAsFileTime(&ft);
+ 
+    tmpres |= ft.dwHighDateTime;
+    tmpres <<= 32;
+    tmpres |= ft.dwLowDateTime;
+ 
+    //converting file time to unix epoch 
+    tmpres -= DELTA_EPOCH_IN_MICROSECS; 
+    tmpres /= 10;  // convert into microseconds
+    tv->tv_sec = (long)(tmpres / 1000000UL);
+    tv->tv_usec = (long)(tmpres % 1000000UL);
+  }
+ 
+  if (NULL != tz)
+  {
+    if (!tzflag)
+    {
+      _tzset();
+      tzflag++;
+    }
+    tz->tz_minuteswest = _timezone / 60;
+    tz->tz_dsttime = _daylight;
+  }
+ 
+  return 0;
+}
+#else //_MSC_VER
+
+#include <sys/time.h>
+
+#endif //_MSC_VER
 
 double getTime()
 {     
@@ -32,7 +81,8 @@ double getTime()
    {
       // fall back to standard unix time
       struct timeval tv;
-      gettimeofday(&tv, 0);
+      struct timezone* tz_null_ptr = NULL;
+      (int) gettimeofday(&tv, tz_null_ptr );
       return (double)(tv.tv_sec) + (double)(tv.tv_usec)/1.0e6;
    }
 }
